@@ -7,10 +7,11 @@ import numpy as np
 import random 
 
 import ctypes
+import time
 
 
 
-def circlePos(N=1, radius=2, origin=(0,0)):
+def circle_pos(N=1, radius=2, origin=(0,0)):
     """
     Generates evenly spaced points in a circle around a point.
 
@@ -64,6 +65,7 @@ def make_trials(train_number, train_speed, update_number, update_speed):
     
     
 def drag_and_drop(trial, win, drag, target_circle, mouse):
+    
     while True:
         # check to see if mouse press matches this array so that it only 
         # works for pressing the left mouse button without having to 
@@ -71,6 +73,17 @@ def drag_and_drop(trial, win, drag, target_circle, mouse):
         change_speed(10)
         trial['mouse_position'].append(mouse.getPos())
         trial['clicked'].append(0)
+        
+        # see if q is pressed in case we 
+        # need to quit
+        if event.getKeys(['q']):
+            wait=event.waitKeys(maxWait='inf', keyList=['q','t'])
+            if wait[0]=='t':
+                event.clearEvents()
+                pass
+            else:
+                core.quit()
+            
         while drag.contains(mouse) and mouse.getPressed() == [1, 0, 0]:
             change_speed(trial['speed'])
             drag.pos=mouse.getPos()
@@ -95,7 +108,7 @@ def drag_and_drop(trial, win, drag, target_circle, mouse):
 
 
 def run_speed_updating(win, drag_radius, target_radius, position_radius, position_numbers, 
-                          train_number, train_speed, update_number, update_speed): 
+                          train_number, train_speed, update_number, update_speed, subject_id, save_path, practice): 
     
     """
     Primary function to run the speed_updating_task. Subjects move a drag circle in
@@ -116,19 +129,22 @@ def run_speed_updating(win, drag_radius, target_radius, position_radius, positio
     drag=visual.Circle(win, radius=drag_radius, lineColorSpace='rgb255', lineColor=(0,0,225), units='deg')
     target_circle=visual.Circle(win, radius=target_radius, lineColorSpace='rgb255', lineColor=(0,255, 0), units='deg')
     
-    #get a path for the data 
-    base_path=os.path.normpath(os.getcwd() + os.sep + os.pardir)
-    data_path=base_path + os.pardir()
-    
     #initiate a mouse
     mouse=event.Mouse()
     mouse.setPos((0,0))
 
+    trials=make_trials(train_number, train_speed, update_number, update_speed)
+
     #create a csv object for saving the data
-    f= open(data_path+subject_id+'_'+ '.csv', 'ab'): 
-    w = csv.DictWriter(f, d.keys())
-            
+    if practice:
+        f= open(os.path.join(save_path , subject_id +'_task-speed-update_beh-'+str(int(time.time()))+'.csv'), 'ab')
+    else: 
+        f= open(os.path.join(save_path , subject_id +'_task-practice-speed-update_beh-'+str(int(time.time()))+'.csv'), 'ab')
     
+    w = csv.DictWriter(f, trials[0].keys())
+    w.writeheader()
+    
+    circ_pos=circle_pos(N=position_numbers, radius=position_radius, origin=(0,0))
 
     for trial in trials:
         #drag and drop task
@@ -139,6 +155,12 @@ def run_speed_updating(win, drag_radius, target_radius, position_radius, positio
             
 if __name__ == '__main__':
     window=visual.Window([1024,768], monitor='testMonitor', color=0, units='deg', fullscr=True, allowGUI=False, screen=0)
+    
+    
+        #get a path for the data 
+    base_path=os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    data_path=base_path + os.sep +'data'
+
     run_speed_updating(win=window, drag_radius=1, target_radius=2, position_radius=6, position_numbers=4, 
-                        train_number=2, train_speed=1, update_number=2, update_speed=12)
+                        train_number=2, train_speed=1, update_number=2, update_speed=12, subject_id='test', save_path=data_path)
     
