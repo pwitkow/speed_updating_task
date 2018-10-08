@@ -34,14 +34,17 @@ key_order=["Participant ID",'Group','Practice','Experimenter']
 if not gui.DlgFromDict(dictionary=subinfo, order=key_order).OK:
     core.quit()
 
-subinfo['target_radius']=2
-subinfo['drag_radius']=.5
-subinfo['position_radius']=6
+subinfo['target_size']=2
+subinfo['drag_size']=.5
+subinfo['position_radius']=7
 subinfo['position_number']=8
 subinfo['train_number']=10
 subinfo['train_speed']=2
 subinfo['update_number']=10
 subinfo['update_speed']=15
+subinfo['drag_file']='cartoon_dog_1.png'
+subinfo['target_file']='cartoon_dog_house_1.png'
+
 
 if win32api.EnumDisplayDevices().DeviceString == 'Intel(R) HD Graphics 620':
     window=visual.Window([1024,768], monitor='Acer_Pers', color=.25, units='deg', fullscr=True, allowGUI=False, screen=1)
@@ -75,7 +78,9 @@ pressed=event.waitKeys(keyList=['q','space'], timeStamped=False)
 if subinfo['Practice']=='True':
     
     while True: 
-        sut.run_speed_updating(win=window, drag_radius=subinfo['drag_radius'], target_radius=subinfo['target_radius'], position_radius=subinfo['position_radius'],
+        sut.run_speed_updating(win=window,drag_file=os.path.join(os.getcwd(), 'images', subinfo['drag_file']), 
+        drag_size=subinfo['drag_size'], target_file=os.path.join(os.getcwd(), 'images', subinfo['target_file']), 
+                        target_size=subinfo['target_size'], position_radius=subinfo['position_radius'],
                         position_numbers=subinfo['position_number'], train_number=4, train_speed=10, 
                         update_number=0, update_speed=1, subject_id=subinfo['Participant ID'], 
                         save_path=data_path, practice=True)
@@ -86,7 +91,9 @@ if subinfo['Practice']=='True':
         if continue_key[0]=='l':
             break
 
-sut.run_speed_updating(win=window, drag_radius=subinfo['drag_radius'], target_radius=subinfo['target_radius'], position_radius=subinfo['position_radius'],
+sut.run_speed_updating(win=window,drag_file=os.path.join(os.getcwd(), 'images', subinfo['drag_file']), 
+        drag_size=subinfo['drag_size'], target_file=os.path.join(os.getcwd(), 'images', subinfo['target_file']), 
+                        target_size=subinfo['target_size'], position_radius=subinfo['position_radius'],
                         position_numbers=subinfo['position_number'], train_number=subinfo['train_number'], train_speed=subinfo['train_speed'], 
                         update_number=subinfo['update_number'], update_speed=subinfo['update_speed'], subject_id=subinfo['Participant ID'], 
                         save_path=data_path, practice=False)

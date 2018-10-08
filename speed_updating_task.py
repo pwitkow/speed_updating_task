@@ -91,8 +91,9 @@ def drag_and_drop(trial, win, drag, target_circle, mouse):
             trial['mouse_position'].append(mouse.getPos())
             trial['clicked'].append(1)
         
-            drag.draw()
             target_circle.draw()
+            drag.draw()
+            
             win.flip()
         
         event.mouseButtons=[0,0,0]
@@ -102,12 +103,12 @@ def drag_and_drop(trial, win, drag, target_circle, mouse):
             change_speed(10)
         
         else:
-            drag.draw()
             target_circle.draw()
+            drag.draw()
             win.flip()
 
 
-def run_speed_updating(win, drag_radius, target_radius, position_radius, position_numbers, 
+def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  position_radius, position_numbers,  
                           train_number, train_speed, update_number, update_speed, subject_id, save_path, practice): 
     
     """
@@ -116,8 +117,10 @@ def run_speed_updating(win, drag_radius, target_radius, position_radius, positio
 
     Keyword arguments:
     win : window object 
-    drag radius: int/float -- radius movable circle
-    target_radius : int/float -- radius of the target circle
+    drag_file : string -- full path and file name of the dragable stimulus
+    drag_size: tuple -- x,y dimension lengths for drag stimulus
+    target_file : string -- full path and file name of the target 
+    target_size : tuple -- x,y dimension lengths for target stimulus
     position_radius : int/floar -- distand of drag onset positions from center
     position_numbers : int -- number of possible drag onset positions
     train_number : int -- number of trials to train on
@@ -126,8 +129,8 @@ def run_speed_updating(win, drag_radius, target_radius, position_radius, positio
     test_speed   : int -- mouse speed for the training trials         
     """
     #objects
-    drag=visual.Circle(win, radius=drag_radius, lineColorSpace='rgb255', lineColor=(0,0,225), units='deg')
-    target_circle=visual.Circle(win, radius=target_radius, lineColorSpace='rgb255', lineColor=(0,255, 0), units='deg')
+    drag=visual.ImageStim(win, image=drag_file, units='deg', size=(1, 3))
+    target_circle=visual.ImageStim(win, image=target_file, units='deg', size=(5, 7), pos=(0,0))
     
     #initiate a mouse
     mouse=event.Mouse()
