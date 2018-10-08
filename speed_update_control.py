@@ -62,14 +62,26 @@ if not os.path.isdir(os.path.join(basepath,'data','Run_'+subinfo['Group'], subin
 #update names to group
 updateNames(subinfo, os.path.join(basepath,'data','Run_'+subinfo['Group']), num=subinfo['Group'])
 
+
+#call the instruction pages 
+instructions=[visual.ImageStim(window, image=os.path.join(os.getcwd(), 'instructions', pic), name=None, units='deg', pos=(0,0), size=(25,15)) \
+                                        for pic in os.listdir(os.path.join(os.getcwd(), 'instructions'))]
+
+
+instructions[0].draw()
+window.flip()
+pressed=event.waitKeys(keyList=['q','space'], timeStamped=False)
+
 if subinfo['Practice']=='True':
+    
     while True: 
         sut.run_speed_updating(win=window, drag_radius=subinfo['drag_radius'], target_radius=subinfo['target_radius'], position_radius=subinfo['position_radius'],
                         position_numbers=subinfo['position_number'], train_number=4, train_speed=10, 
                         update_number=0, update_speed=1, subject_id=subinfo['Participant ID'], 
                         save_path=data_path, practice=True)
                         
-                        
+        instructions[1].draw()
+        window.flip()
         continue_key=event.waitKeys(maxWait='inf', keyList=['g', 'l'])
         if continue_key[0]=='l':
             break
