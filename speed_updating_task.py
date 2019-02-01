@@ -58,21 +58,22 @@ def make_trials(train_number, train_speed, update_number, update_speed):
     
     for tr_number, trial in enumerate(trial_list):
         trial_list[tr_number]['trial_number']=tr_number
-        trial_list[tr_number]['mouse_position']=[]
-        trial_list[tr_number]['clicked']=[]
-    
+        trial_list[tr_number]['x']=0
+        trial_list[tr_number]['y']=0
+        trial_list[tr_number]['clicked']=0
     return trial_list
     
     
-def drag_and_drop(trial, win, drag, target_circle, mouse):
+def drag_and_drop(trial, win, drag, target_circle, mouse,w):
     
     while True:
         # check to see if mouse press matches this array so that it only 
         # works for pressing the left mouse button without having to 
         #assign a varaible'
         change_speed(10)
-        trial['mouse_position'].append(mouse.getPos())
-        trial['clicked'].append(0)
+        trial['x']=mouse.getPos()[0]
+        trial['y']=mouse.getPos()[1]
+        trial['clicked']=0
         
         # see if q is pressed in case we 
         # need to quit
@@ -88,15 +89,21 @@ def drag_and_drop(trial, win, drag, target_circle, mouse):
             change_speed(trial['speed'])
             drag.pos=mouse.getPos()
             
-            trial['mouse_position'].append(mouse.getPos())
-            trial['clicked'].append(1)
+            trial['x']=mouse.getPos()[0]
+            trial['y']=mouse.getPos()[1]
+            trial['clicked']=1
         
             target_circle.draw()
             drag.draw()
             
             win.flip()
+
+            w.writerow(trial)
         
         event.mouseButtons=[0,0,0]
+        
+        
+        w.writerow(trial)
         
         if target_circle.contains(drag.pos):
             break
@@ -129,8 +136,8 @@ def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  posit
     test_speed   : int -- mouse speed for the training trials         
     """
     #objects
-    drag=visual.ImageStim(win, image=drag_file, units='deg', size=(1, 3))
-    target_circle=visual.ImageStim(win, image=target_file, units='deg', size=(5, 7), pos=(0,0))
+    drag=visual.ImageStim(win, image=drag_file, units='deg', size=(3, 3))
+    target_circle=visual.ImageStim(win, image=target_file, units='deg', size=(5, 5), pos=(0,0))
     
     #initiate a mouse
     mouse=event.Mouse()
@@ -152,8 +159,8 @@ def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  posit
     for trial in trials:
         #drag and drop task
         drag.pos=random.choice(circ_pos)
-        drag_and_drop(trial,win, drag, target_circle, mouse)
-        w.writerow(trial)
+        drag_and_drop(trial,win, drag, target_circle, mouse, w)
+        
     
             
 if __name__ == '__main__':
