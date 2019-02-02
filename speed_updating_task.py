@@ -64,16 +64,16 @@ def make_trials(train_number, train_speed, update_number, update_speed):
     return trial_list
     
     
-def drag_and_drop(trial, win, drag, target_circle, mouse,w):
+def drag_and_drop(trial, win, drag, target_circle, mouse):
+    
+    t_list=[]
     
     while True:
         # check to see if mouse press matches this array so that it only 
         # works for pressing the left mouse button without having to 
         #assign a varaible'
         change_speed(10)
-        trial['x']=mouse.getPos()[0]
-        trial['y']=mouse.getPos()[1]
-        trial['clicked']=0
+
         
         # see if q is pressed in case we 
         # need to quit
@@ -89,21 +89,20 @@ def drag_and_drop(trial, win, drag, target_circle, mouse,w):
             change_speed(trial['speed'])
             drag.pos=mouse.getPos()
             
-            trial['x']=mouse.getPos()[0]
-            trial['y']=mouse.getPos()[1]
-            trial['clicked']=1
         
             target_circle.draw()
             drag.draw()
             
             win.flip()
 
-            w.writerow(trial)
+            t_list.append({"trial_number":trial['trial_number'],  "clicked": 1, 'x':mouse.getPos()[0],
+                            'y':mouse.getPos()[1], 'type':trial['type']})
+
         
         event.mouseButtons=[0,0,0]
         
-        
-        w.writerow(trial)
+        t_list.append({"trial_number":trial['trial_number'],  "clicked": 0, 'x':mouse.getPos()[0],
+                            'y':mouse.getPos()[1], 'type':trial['type']})
         
         if target_circle.contains(drag.pos):
             break
@@ -113,6 +112,7 @@ def drag_and_drop(trial, win, drag, target_circle, mouse,w):
             target_circle.draw()
             drag.draw()
             win.flip()
+    return t_list
 
 
 def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  position_radius, position_numbers,  
@@ -146,7 +146,7 @@ def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  posit
     trials=make_trials(train_number, train_speed, update_number, update_speed)
 
     #create a csv object for saving the data
-    if practice:
+    if not practice:
         f= open(os.path.join(save_path , subject_id +'_task-speed-update_beh-'+str(int(time.time()))+'.csv'), 'ab')
     else: 
         f= open(os.path.join(save_path , subject_id +'_task-practice-speed-update_beh-'+str(int(time.time()))+'.csv'), 'ab')
@@ -159,7 +159,9 @@ def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  posit
     for trial in trials:
         #drag and drop task
         drag.pos=random.choice(circ_pos)
-        drag_and_drop(trial,win, drag, target_circle, mouse, w)
+        trial_f=drag_and_drop(trial,win, drag, target_circle, mouse)
+        for t in trial_f:
+            w.writerow(t)
         
     
             
