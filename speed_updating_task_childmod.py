@@ -8,7 +8,6 @@ import random
 
 import ctypes
 import time
-import glob
 
 
 
@@ -43,7 +42,7 @@ def change_speed(speed=3):
     set_mouse_speed = 113   # 0x0071 for SPI_SETMOUSESPEED
     ctypes.windll.user32.SystemParametersInfoA(set_mouse_speed, 0, speed, 0)
 
-def make_trials(train_number, train_speed, update_number, update_speed, targets):
+def make_trials(train_number, train_speed, update_number, update_speed):
     '''
     Make the full set of trials for the task
     
@@ -59,30 +58,22 @@ def make_trials(train_number, train_speed, update_number, update_speed, targets)
     
     for tr_number, trial in enumerate(trial_list):
         trial_list[tr_number]['trial_number']=tr_number
-        trial_list[tr_number]['clicked']=list([])
-        trial_list[tr_number]['mouse_position']=list([])
-        trial_list[tr_number]['RT']='NA'
-        trial_list[tr_number]['target_image']=np.random.choice(targets, 1)
-        trial_list[tr_number]['mouse_x']=np.random.choice(targets, 1)
-        trial_list[tr_number]['mouse_y']=np.random.choice(targets, 1)
+        trial_list[tr_number]['x']=0
+        trial_list[tr_number]['y']=0
+        trial_list[tr_number]['clicked']=0
     return trial_list
     
     
 def drag_and_drop(trial, win, drag, target_circle, mouse):
     
-    #set the image for the trail
-    drag.setImage(trial['target_image'][0])
-    
-    #start a clock so we can independatnly measure RT
-    trial_clock=core.Clock()
-    trial_start=trial_clock.getTime()
+    t_list=[]
     
     while True:
         # check to see if mouse press matches this array so that it only 
         # works for pressing the left mouse button without having to 
         #assign a varaible'
         change_speed(10)
-        
+
         
         # see if q is pressed in case we 
         # need to quit
@@ -103,29 +94,28 @@ def drag_and_drop(trial, win, drag, target_circle, mouse):
             drag.draw()
             
             win.flip()
-                
-            trial['mouse_position'].append(mouse.getPos())
-            trial['clicked'].append(1)
+
+            t_list.append({"trial_number":trial['trial_number'],  "clicked": 1, 'x':mouse.getPos()[0],
+                            'y':mouse.getPos()[1], 'type':trial['type']})
 
         
         event.mouseButtons=[0,0,0]
-
+        
+        t_list.append({"trial_number":trial['trial_number'],  "clicked": 0, 'x':mouse.getPos()[0],
+                            'y':mouse.getPos()[1], 'type':trial['type']})
         
         if target_circle.contains(drag.pos):
             break
             change_speed(10)
         
         else:
-            trial['mouse_position'].append(mouse.getPos())
-            trial['clicked'].append(0)
             target_circle.draw()
             drag.draw()
             win.flip()
-    
-    trial['RT']=trial_clock.getTime()-trial_start
+    return t_list
 
 
-def run_speed_updating(win,drag_files, drag_size, target_file,target_size,  position_radius, position_numbers,  
+def run_speed_updating(win,drag_file, drag_size, target_file,target_size,  position_radius, position_numbers,  
                           train_number, train_speed, update_number, update_speed, subject_id, save_path, practice): 
     
     """
@@ -146,55 +136,43 @@ def run_speed_updating(win,drag_files, drag_size, target_file,target_size,  posi
     test_speed   : int -- mouse speed for the training trials         
     """
     #objects
-    drag=visual.ImageStim(win, image=None, units='deg', size=(drag_size[0], drag_size[1]))
-    target_circle=visual.ImageStim(win, image=target_file, units='deg', size=(target_size[0], target_size[1]), pos=(0,0))
+    drag=visual.ImageStim(win, image=drag_file, units='deg', size=(6, 6))
+    target_circle=visual.ImageStim(win, image=target_file, units='deg', size=(8, 8), pos=(0,0))
     
     #initiate a mouse
     mouse=event.Mouse()
     mouse.setPos((0,0))
-    
-    
-    targets=glob.glob(drag_files)
 
-
-    trials=make_trials(train_number, train_speed, update_number, update_speed, targets)
+    trials=make_trials(train_number, train_speed, update_number, update_speed)
 
     #create a csv object for saving the data
+    if not practice:
+        f= open(os.path.join(save_path , subject_id +'_task-speed-update_beh-'+str(int(time.time()))+'.csv'), 'ab')
+    else: 
+        f= open(os.path.join(save_path , subject_id +'_task-practice-speed-update_beh-'+str(int(time.time()))+'.csv'), 'ab')
+    
+    w = csv.DictWriter(f, trials[0].keys())
+    w.writeheader()
     
     circ_pos=circle_pos(N=position_numbers, radius=position_radius, origin=(0,0))
 
     for trial in trials:
-        
-        if not practice:
-            f= open(os.path.join(save_path , subject_id +'_task-speed-update_beh_trial-number-'+str(trial['trial_number'])+'.csv'), 'ab')
-        else: 
-            f= open(os.path.join(save_path , subject_id +'_task-practice-speed-update_beh_trial-number-'+str(trial['trial_number'])+'.csv'), 'ab')
-
-        
-
-        
         #drag and drop task
         drag.pos=random.choice(circ_pos)
-        drag_and_drop(trial,win, drag, target_circle, mouse)
-        
-        trial['mouse_position']=list(trial['mouse_position'])
-        trial['clicked']=list(trial['clicked'])
-        
-        #re-make set of dictionaries for data writing
-        final_set=[{'mouse_x':trial['mouse_position'][tr][0],'mouse_y':trial['mouse_position'][tr][1],
-        'clicked':trial['clicked'][tr],'RT':trial['RT'], 'target_image':trial['target_image'], 
-        'trial_number':trial['trial_number']} for tr in range(len(trial['clicked']))]
-        
-        w = csv.DictWriter(f, final_set[0].keys())
-        w.writeheader()
-        
-        w.writerows(final_set)
-        
-        f.close()
-    
+        trial_f=drag_and_drop(trial,win, drag, target_circle, mouse)
+        for t in trial_f:
+            w.writerow(t)
         
     
-    change_speed(10)
+            
 if __name__ == '__main__':
-    print 'Run this through "speed_updating_control.py"'
+    window=visual.Window([1024,768], monitor='testMonitor', color=0, units='deg', fullscr=True, allowGUI=False, screen=0)
+    
+    
+        #get a path for the data 
+    base_path=os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    data_path=base_path + os.sep +'data'
+
+    run_speed_updating(win=window, drag_radius=1, target_radius=2, position_radius=6, position_numbers=4, 
+                        train_number=2, train_speed=1, update_number=2, update_speed=12, subject_id='test', save_path=data_path)
     

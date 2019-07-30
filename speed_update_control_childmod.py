@@ -28,23 +28,23 @@ def updateNames(d, path,num=1):
             w.writerow(d)
 #subject data
 
-subinfo={"Participant ID": 'test','Group':'child','Experimenter':['MJ', 'Sharlene', 'Other'], 'Practice':'True'}
+subinfo={"Participant ID": 'test','Group':'test4','Experimenter':['MJ', 'Other', 'Other'], 'Practice':'True'}
 key_order=["Participant ID",'Group','Practice','Experimenter']
 
 if not gui.DlgFromDict(dictionary=subinfo, order=key_order).OK:
     core.quit()
 
-subinfo['target_size']=(5,5)
-subinfo['drag_size']=(3,3)
+subinfo['target_size']=2
+subinfo['drag_size']=.5
 subinfo['position_radius']=14
 subinfo['position_number']=8
 subinfo['train_number']=10 # number of training trials
-subinfo['train_speed']=8    # pre update speed
+subinfo['train_speed']=15    # pre update speed
 subinfo['update_number']=10 # number of test trials
-subinfo['update_speed']=2 # post update speed
-subinfo['drag_regex']='*balloon.png'
+subinfo['update_speed']=4 # post update speed
+subinfo['drag_file']='mouse_balloon.png'
 subinfo['target_file']='mouse_net.png'
-subinfo['practice_number']=2 #number of practice trials
+subinfo['practice_number']=4 #number of practice trials
 
 
 if win32api.EnumDisplayDevices().DeviceString == 'Intel(R) HD Graphics 620':
@@ -79,7 +79,7 @@ pressed=event.waitKeys(keyList=['q','space'], timeStamped=False)
 if subinfo['Practice']=='True':
     
     while True: 
-        sut.run_speed_updating(win=window,drag_files=os.path.join(os.getcwd(), 'images', subinfo['drag_regex']), 
+        sut.run_speed_updating(win=window,drag_file=os.path.join(os.getcwd(), 'images', subinfo['drag_file']), 
         drag_size=subinfo['drag_size'], target_file=os.path.join(os.getcwd(), 'images', subinfo['target_file']), 
                         target_size=subinfo['target_size'], position_radius=subinfo['position_radius'],
                         position_numbers=subinfo['position_number'], train_number=subinfo['practice_number'], train_speed=10, 
@@ -92,7 +92,7 @@ if subinfo['Practice']=='True':
         if continue_key[0]=='2':
             break
 
-sut.run_speed_updating(win=window,drag_files=os.path.join(os.getcwd(), 'images', subinfo['drag_regex']), 
+sut.run_speed_updating(win=window,drag_file=os.path.join(os.getcwd(), 'images', subinfo['drag_file']), 
         drag_size=subinfo['drag_size'], target_file=os.path.join(os.getcwd(), 'images', subinfo['target_file']), 
                         target_size=subinfo['target_size'], position_radius=subinfo['position_radius'],
                         position_numbers=subinfo['position_number'], train_number=subinfo['train_number'], train_speed=subinfo['train_speed'], 
